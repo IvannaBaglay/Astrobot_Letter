@@ -17,14 +17,26 @@ public:
 	ATriggerPlatform();
 
 	// Spawn zone component to define where the object spawns
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	class UArrowComponent* SpawnZone;
 	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	//class USceneComponent* SpawnZoneComponent;
+	//class UArrowComponent* SpawnZone;
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	//class USceneComponent* SpawnZone;
+
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	//class UStaticMesh* TriggerBox;
+	//
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	//class UStaticMesh* SpawnPoint;
+
+	UPROPERTY(EditAnywhere)
+	USceneComponent* DefaultRoot = nullptr;
 
 	// Root component for the trigger
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	class UBoxComponent* TriggerBox;
+	class UBoxComponent* TriggerBoxNewComponent = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	class USphereComponent* SpawnPointNewComponent = nullptr;
 
 protected:
 	// Called when the game starts or when spawned

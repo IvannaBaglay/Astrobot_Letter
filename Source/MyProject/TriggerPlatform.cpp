@@ -10,6 +10,7 @@
 #include "Components/SceneComponent.h"
 #include "Components/ArrowComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/SphereComponent.h"
 
 #include "AlphabetInstanceSubsystem.h"
 
@@ -24,29 +25,43 @@ ATriggerPlatform::ATriggerPlatform()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	
-    // Set up the trigger box
-    TriggerBox = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
-    TriggerBox->SetupAttachment(RootComponent);
-    TriggerBox->SetCollisionProfileName(TEXT("Trigger"));
-    TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &ATriggerPlatform::OnOverlapComponentBegin);
+    // In Constructor
+    DefaultRoot = CreateDefaultSubobject<USceneComponent>(TEXT("DefaultRoot"));
+    SetRootComponent(DefaultRoot);
 
+    SpawnPointNewComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SpawnPoint"));
+    SpawnPointNewComponent->SetupAttachment(DefaultRoot);
+    TriggerBoxNewComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
+    TriggerBoxNewComponent->SetupAttachment(DefaultRoot);
+
+    TriggerBoxNewComponent->SetCollisionProfileName(TEXT("Trigger"));
+    TriggerBoxNewComponent->OnComponentBeginOverlap.AddDynamic(this, &ATriggerPlatform::OnOverlapComponentBegin);
+    
     //Register Events
 	OnActorBeginOverlap.AddDynamic(this, &ATriggerPlatform::OnOverlapActorBegin);
 	OnActorEndOverlap.AddDynamic(this, &ATriggerPlatform::OnOverlapEnd);
 
-    // Set up the spawn zone
-    SpawnZone = CreateDefaultSubobject<UArrowComponent>(TEXT("SpawnZone"));
-    SpawnZone->SetupAttachment(RootComponent);
-    // Set a default offset above the trigger (e.g., 100 units up)
-    SpawnZone->SetWorldLocation(this->GetActorLocation());
-    SpawnZone->SetRelativeLocation(FVector(0.0f, 0.0f, 100.0f));
+    //DrawDebugBox(GetWorld(), GetActorLocation(), SpawnZoneComponent->Getcoli.GetSize(), FColor::Purple, true, 999, 0, 5);
 
-    //// Set up the spawn zone
-    //SpawnZoneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("SpawnZoneComponent"));
-    //SpawnZoneComponent->SetupAttachment(RootComponent);
+    // Set up the spawn zone
+    //SpawnZone = CreateDefaultSubobject<UArrowComponent>(TEXT("SpawnZone"));
+    //SpawnZone->SetupAttachment(RootComponent);
     //// Set a default offset above the trigger (e.g., 100 units up)
-    //SpawnZoneComponent->SetRelativeLocation(FVector(0.0f, 0.0f, 100.0f));
+    //SpawnZone->SetWorldLocation(this->GetActorLocation());
+    //SpawnZone->SetRelativeLocation(FVector(0.0f, 0.0f, 100.0f));
+
+    //SpawnZoneComponent->Attac(RootComponent);
+    // Set a default offset above the trigger (e.g., 100 units up)
+    //SpawnZone->SetRelativeLocation();
+    //GetComponentsByTag
+    //if (GetComponentName().Contains(TEXT("Shield"))
+    //{
+    //    HoldingComponent->SetStaticMesh(ShieldMesh);
+    //}
+    //else if (GetComponentName.Contains(TEXT("Deflect"))
+    //{
+    //    HoldingComponent->SetStaticMesh(DeflectMesh);
+    //}
 
 }
 
@@ -54,7 +69,9 @@ ATriggerPlatform::ATriggerPlatform()
 void ATriggerPlatform::BeginPlay()
 {
 	Super::BeginPlay();
-    DrawDebugBox(GetWorld(), GetActorLocation(), GetComponentsBoundingBox().GetExtent(), FColor::Purple, true, 999, 0, 5);
+
+    //DrawDebugBox(GetWorld(), TriggerBoxNewComponent->GetComponentLocation(), TriggerBoxNewComponent->GetScaledBoxExtent(), FColor::Purple, true, 999, 0, 5);
+    //DrawDebugSphere(GetWorld(), SpawnPointNewComponent->GetComponentLocation(), SpawnPointNewComponent->GetScaledSphereRadius(), 8,  FColor::Red, true, 999, 0, 5);
 }
 
 // Called every frame
@@ -76,13 +93,13 @@ void ATriggerPlatform::OnOverlapComponentBegin(UPrimitiveComponent* OverlappedCo
         }
     }
 
-    if (SpawnZone == nullptr)
+    if (SpawnPointNewComponent == nullptr)
     {
         UE_LOG(LogTemp, Error, TEXT("SpawnZone is nullptr"));
         return;
     }
 
-    FTransform SpawnTransform = SpawnZone->GetComponentTransform();
+    FTransform SpawnTransform = SpawnPointNewComponent->GetComponentTransform();
 
     UAlphabetInstanceSubsystem* Subsystem = GetWorld()->GetSubsystem<UAlphabetInstanceSubsystem>();
     if (Subsystem)
@@ -91,7 +108,7 @@ void ATriggerPlatform::OnOverlapComponentBegin(UPrimitiveComponent* OverlappedCo
         UE_LOG(LogTemp, Log, TEXT("TriggerZone: Spawned symbol at %s"), *SpawnTransform.GetLocation().ToString());
         FVector position = SpawnTransform.GetLocation();
         FRotator rotation = SpawnTransform.Rotator();
-        FVector forward = SpawnZone->GetForwardVector();
+        FVector forward = SpawnPointNewComponent->GetForwardVector();
         Subsystem->SpawnSentence(Str, position, rotation, forward);
     }
 }
