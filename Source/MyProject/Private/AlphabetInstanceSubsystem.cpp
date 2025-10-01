@@ -24,6 +24,8 @@ void UAlphabetInstanceSubsystem::AddAlphabet(int32 symbol)
 {
 }
 
+PRAGMA_DISABLE_OPTIMIZATION
+
 void UAlphabetInstanceSubsystem::SpawnSentence(FString sentence, const FVector startLocation, FRotator rotation, FVector forward)
 {
     FVector offset = FVector::Zero();
@@ -36,13 +38,42 @@ void UAlphabetInstanceSubsystem::SpawnSentence(FString sentence, const FVector s
 
 void UAlphabetInstanceSubsystem::MoveOffset(const FVector spawnedSize, FVector& offset, FVector forward)
 {
-    // Can I use symbol size of will be better have one const offset?
-    // Need to add 
-    // Find symbol size
-    FVector symbolSize = forward * (spawnedSize + FVector(10.f, 10.f, 10.f));
+    forward.Normalize();
 
-    offset += symbolSize;
+    // Only X dimension = letter width (assuming your meshes are oriented that way)
+    float symbolWidth = spawnedSize.X;
+
+    float spacing = symbolWidth + 10.f; // add padding
+    offset += forward * spacing;
+
+
+    //FVector halfSize = spawnedSize * 0.5f;
+    //
+    //float symbolWidth = GetProjectedWidth(halfSize, forward);
+    //
+    //float spacing = symbolWidth + 10.f; // padding
+    //offset += forward.GetSafeNormal() * spacing;
 }
+
+float UAlphabetInstanceSubsystem::GetProjectedWidth(const FVector& boxExtent, const FVector& forward)
+{
+    FVector fwd = forward.GetSafeNormal();
+
+    // Each local axis of the box, scaled by half-extent
+    FVector XAxis(boxExtent.X, 0, 0);
+    FVector YAxis(0, boxExtent.Y, 0);
+    FVector ZAxis(0, 0, boxExtent.Z);
+
+    // Projection = how much each contributes along forward
+    float projection =
+        FMath::Abs(FVector::DotProduct(XAxis, fwd)) +
+        FMath::Abs(FVector::DotProduct(YAxis, fwd)) +
+        FMath::Abs(FVector::DotProduct(ZAxis, fwd));
+
+    return projection * 2.f; // full width
+}
+
+PRAGMA_ENABLE_OPTIMIZATION
 
 
 FVector UAlphabetInstanceSubsystem::GetSymbolSize(const int32 symbol)
@@ -78,8 +109,10 @@ FVector UAlphabetInstanceSubsystem::GetActorDimensions(const AAlphabetSymbol* co
     // Get the bounding box of the Actor, including all its components
     symbol->GetActorBounds(true, Origin, BoxExtent);
 
+    FBoxSphereBounds Bounds = symbol->GetComponentsBoundingBox();
+
     // BoxExtent represents half of the dimensions, so multiply by 2 to get full size
-    FVector ActorSize = BoxExtent * 2.0f;
+    FVector ActorSize = Bounds.BoxExtent * 2.0f;
 
     UE_LOG(LogTemp, Warning, TEXT("Actor Size: X=%.2f, Y=%.2f, Z=%.2f"), ActorSize.X, ActorSize.Y, ActorSize.Z);
 
@@ -91,7 +124,7 @@ FVector UAlphabetInstanceSubsystem::SpawmSymbol(const int32 symbol,const FVector
     UWorld* World = GetWorld();
     if (!World)
     {
-        UE_LOG(LogTemp, Error, TEXT("YakuzaManagerSubsystem: No valid world!"));
+        UE_LOG(LogTemp, Error, TEXT("AlphabetInstanceSubsystem: No valid world!"));
 
         return FVector::ZeroVector;
     }
@@ -128,7 +161,7 @@ FVector UAlphabetInstanceSubsystem::SpawmSymbol(const int32 symbol,const FVector
 void UAlphabetInstanceSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
     //const std::string albet{ "abcdefghijklmnopqrstuvwxyz" };
-    const std::string albet{ "AB" };
+    const std::string albet{ "ABCDEFGHIJKLMOPRSTUVWXYZ" };
 
 
     LoadAlphabet(albet);

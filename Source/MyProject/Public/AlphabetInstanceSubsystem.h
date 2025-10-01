@@ -47,6 +47,7 @@ private:
 	void MoveOffset(const FVector spawnedSize, FVector& offset, FVector forward);
 	FVector GetSymbolSize(const int32 symbol);
 	FVector GetActorDimensions(const AAlphabetSymbol* const symbol);
+	float GetProjectedWidth(const FVector& boxExtent, const FVector& forward);
 
 public: 
 	//UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default")

@@ -11,6 +11,7 @@
 #include "Components/ArrowComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/SphereComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 #include "AlphabetInstanceSubsystem.h"
 
@@ -109,8 +110,9 @@ void ATriggerPlatform::OnOverlapComponentBegin(UPrimitiveComponent* OverlappedCo
         FVector position = SpawnTransform.GetLocation();
         FRotator rotation = SpawnTransform.Rotator();
         FVector forward = SpawnPointNewComponent->GetForwardVector();
+        FVector forwardFromRotation = UKismetMathLibrary::GetForwardVector(rotation);
         Subsystem->SpawnSentence(Str, position, rotation, forward);
-    }
+    }   
 }
 
 void ATriggerPlatform::OnOverlapActorBegin(class AActor* OverlappedActor, class AActor* OtherActor)
