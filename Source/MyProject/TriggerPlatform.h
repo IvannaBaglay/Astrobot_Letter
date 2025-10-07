@@ -16,18 +16,6 @@ public:
 	// Sets default values for this actor's properties
 	ATriggerPlatform();
 
-	// Spawn zone component to define where the object spawns
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	//class UArrowComponent* SpawnZone;
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	//class USceneComponent* SpawnZone;
-
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	//class UStaticMesh* TriggerBox;
-	//
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	//class UStaticMesh* SpawnPoint;
-
 	UPROPERTY(EditAnywhere)
 	USceneComponent* DefaultRoot = nullptr;
 
