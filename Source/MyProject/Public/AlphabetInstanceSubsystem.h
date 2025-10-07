@@ -42,7 +42,7 @@ public:
 	void SpawnSentence(FString sentence, const FVector startLocation, FRotator rotation, FVector forward);
 
 private:
-	void LoadAlphabet(const std::string& alphabet); // check blueprints
+	void LoadAlphabet(const FString& alphabet); // check blueprints
 	TSubclassOf<AAlphabetSymbol> FindBlueprint(const int32 symbol);
 	void MoveOffset(const FVector spawnedSize, FVector& offset, FVector forward);
 	FVector GetSymbolSize(const int32 symbol);

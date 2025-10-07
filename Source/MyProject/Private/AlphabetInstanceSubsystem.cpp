@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
 
+
 UAlphabetInstanceSubsystem::UAlphabetInstanceSubsystem()
 {
     
@@ -161,14 +162,14 @@ FVector UAlphabetInstanceSubsystem::SpawmSymbol(const int32 symbol,const FVector
 void UAlphabetInstanceSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
     //const std::string albet{ "abcdefghijklmnopqrstuvwxyz" };
-    const std::string albet{ "ABCDEFGHIJKLMOPRSTUVWXYZ" };
+    const FString albet{ "ABCDEFGHIJKLMOPRSTUVWXYZ" };
 
 
     LoadAlphabet(albet);
 }
 
 
-void UAlphabetInstanceSubsystem::LoadAlphabet(const std::string& alphabet)
+void UAlphabetInstanceSubsystem::LoadAlphabet(const FString& alphabet)
 {
     TSubclassOf<AAlphabetSymbol> blueprintClass = nullptr;
     for (const TCHAR symbol : alphabet)
