@@ -42,7 +42,7 @@ private:
     FVector GetSymbolSize(const int32 symbol);
     FVector GetActorDimensions(const AAlphabetSymbol* const symbol);
     float GetProjectedWidth(const AActor* actor, const FVector& forward);
-    FVector GetStaticMeshSize(const AActor* Actor);
+    FVector GetStaticMeshSize(const AAlphabetSymbol* Actor);
 
 public: 
     //UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default")

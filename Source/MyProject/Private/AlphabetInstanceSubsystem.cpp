@@ -35,7 +35,9 @@ void UAlphabetInstanceSubsystem::SpawnSentence(FString sentence, const FVector s
         if (spawnedSymbol)
         {
             FVector symbolStaticSize = GetStaticMeshSize(spawnedSymbol);
-            MoveOffset(symbolStaticSize, offset, forward);
+            float symbolLenght = spawnedSymbol->GetLength();
+            UE_LOG(LogTemp, Log, TEXT("symbol Lenght:%f\n"), symbolLenght);
+            MoveOffset(FVector(symbolLenght, 0.f, 0.f), offset, forward);
         }
     }
 }
@@ -45,10 +47,12 @@ void UAlphabetInstanceSubsystem::MoveOffset(FVector symbolSize, FVector& offset,
     forward.Normalize();
 
     //float symbolWidth = GetProjectedWidth(Symbol, forward);
-    UE_LOG(LogTemp, Log, TEXT("symbol Width: %f\n"), symbolSize.X);
+    UE_LOG(LogTemp, Log, TEXT("symbol X:%f Y:%f, Z:%f\n"), symbolSize.X, symbolSize.Y, symbolSize.Z);
     
-    float spacing = 60.f + 10.f; // padding
+    float spacing = symbolSize.X + 10.f; // padding
     offset += forward * spacing;
+
+    // TODO: Add debug to see next spawning point
 }
 
 float UAlphabetInstanceSubsystem::GetProjectedWidth(const AActor* actor, const FVector& forward)
@@ -83,15 +87,15 @@ float UAlphabetInstanceSubsystem::GetProjectedWidth(const AActor* actor, const F
     return Bounds.BoxExtent.X * 2.f; // full width
 }
 
-FVector UAlphabetInstanceSubsystem::GetStaticMeshSize(const AActor* Actor)
+FVector UAlphabetInstanceSubsystem::GetStaticMeshSize(const AAlphabetSymbol* Actor)
 {
     if (!Actor)
         return FVector::ZeroVector;
 
     // Find the StaticMeshComponent in the actor
-    const UStaticMeshComponent* MeshComp = Actor->FindComponentByClass<UStaticMeshComponent>();
+    /*const UStaticMeshComponent* MeshComp = Actor->FindComponentByClass<UStaticMeshComponent>();
     if (!MeshComp)
-        return FVector::ZeroVector;
+        return FVector::ZeroVector;*/
     
     // Get the static mesh asset
 
@@ -106,15 +110,17 @@ FVector UAlphabetInstanceSubsystem::GetStaticMeshSize(const AActor* Actor)
     //    }
     //}
 
-    const UStaticMesh* Mesh = MeshComp->GetStaticMesh();
-    if (!Mesh)
-        return FVector::ZeroVector;
+    //const UStaticMesh* Mesh = MeshComp->GetStaticMesh();
+    //if (!Mesh)
+    //    return FVector::ZeroVector;
 
-    // Get bounds in *local space* (independent of rotation)
-    const FBoxSphereBounds LocalBounds = Mesh->GetBounds();
+    //// Get bounds in *local space* (independent of rotation)
+    //const FBoxSphereBounds LocalBounds = Mesh->GetBounds();
 
-    // Full size (not half extents)
-    return LocalBounds.BoxExtent * 2.f;
+    //// Full size (not half extents)
+    //return LocalBounds.BoxExtent * 2.f;
+
+    return Actor->GetMeshSize();
 }
 
 PRAGMA_ENABLE_OPTIMIZATION
