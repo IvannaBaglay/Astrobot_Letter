@@ -10,6 +10,7 @@
 #include "AlphabetInstanceSubsystem.generated.h"
 
 class AAlphabetSymbol;
+class ASymbolCube;
 
 UCLASS()
 class MYPROJECT_API UAlphabetInstanceSubsystem : public UWorldSubsystem
@@ -32,10 +33,12 @@ public:
      void AddAlphabet(int32 symbol); // TODO: how to create fabric?>?
      UFUNCTION()
      AAlphabetSymbol* SpawmSymbol(const int32 symbol,const FVector location, FRotator rotation); // call it in trigger area to spawn symbol
+     ASymbolCube* SpawmSymbolByCubes(const int32 symbol,const FVector location, FRotator rotation); // call it in trigger area to spawn symbol
      UFUNCTION()
      void SpawnSentence(FString sentence, const FVector startLocation, FRotator rotation, FVector forward);
 
 private:
+    // To be depricated
     void LoadAlphabet(const FString& alphabet); // check blueprints
     TSubclassOf<AAlphabetSymbol> FindBlueprint(const int32 symbol);
     void MoveOffset(FVector symbolSize, FVector& offset, FVector forward);
@@ -44,6 +47,11 @@ private:
     float GetProjectedWidth(const AActor* actor, const FVector& forward);
     FVector GetStaticMeshSize(const AAlphabetSymbol* Actor);
 
+private:
+    // New system to spawn cube
+    void SpawnCube(const FVector location, FRotator rotation);
+    void LoadCubeSymbol();
+
 public: 
     //UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default")
     UPROPERTY()
@@ -51,6 +59,8 @@ public:
     
     UPROPERTY()
     TArray<AActor*> Symbols;
+
+    TSubclassOf<ASymbolCube> SymbolCubeBlueprint;
     
     // String language // to choose which folder will be loaded. for future
 };

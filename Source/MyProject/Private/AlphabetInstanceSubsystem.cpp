@@ -6,6 +6,10 @@
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
 
+#include "Symbols/SymbolCube.h"
+
+// Rework to spawn symbol by single cubes 
+// 
 
 UAlphabetInstanceSubsystem::UAlphabetInstanceSubsystem()
 {
@@ -29,16 +33,22 @@ PRAGMA_DISABLE_OPTIMIZATION
 void UAlphabetInstanceSubsystem::SpawnSentence(FString sentence, const FVector startLocation, FRotator rotation, FVector forward)
 {
     FVector offset = FVector::Zero();
+
     for (int32 symbol : sentence)
     {
-        AAlphabetSymbol* spawnedSymbol = SpawmSymbol(symbol, startLocation + offset, rotation);
-        if (spawnedSymbol)
+        TObjectPtr<ASymbolCube> spawnedCube = SpawmSymbolByCubes(symbol, startLocation + offset, rotation);
+        if (spawnedCube)
         {
-            FVector symbolStaticSize = GetStaticMeshSize(spawnedSymbol);
-            float symbolLenght = spawnedSymbol->GetLength();
-            UE_LOG(LogTemp, Log, TEXT("symbol Lenght:%f\n"), symbolLenght);
-            MoveOffset(FVector(symbolLenght, 0.f, 0.f), offset, forward);
+            MoveOffset(spawnedCube->GetSize(), offset, forward);
         }
+        //AAlphabetSymbol* spawnedSymbol = SpawmSymbol(symbol, startLocation + offset, rotation);
+        //if (spawnedSymbol)
+        //{
+        //    FVector symbolStaticSize = GetStaticMeshSize(spawnedSymbol);
+        //    float symbolLenght = spawnedSymbol->GetLength();
+        //    UE_LOG(LogTemp, Log, TEXT("symbol Lenght:%f\n"), symbolLenght);
+        //    MoveOffset(FVector(symbolLenght, 0.f, 0.f), offset, forward);
+        //}
     }
 }
 
@@ -121,6 +131,50 @@ FVector UAlphabetInstanceSubsystem::GetStaticMeshSize(const AAlphabetSymbol* Act
     //return LocalBounds.BoxExtent * 2.f;
 
     return Actor->GetMeshSize();
+}
+
+void UAlphabetInstanceSubsystem::SpawnCube(const FVector location, FRotator rotation)
+{
+    TObjectPtr<UWorld> world = GetWorld();
+    if (!world)
+    {
+        UE_LOG(LogTemp, Error, TEXT("AlphabetInstanceSubsystem: No valid world!"));
+
+        return nullptr;
+    }
+
+    FActorSpawnParameters spawnParameters;
+    spawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+    FVector SpawnLocation = location;
+    FRotator SpawnRotation = rotation;
+
+    TObjectPtr<ASymbolCube> NewSymbol = world->SpawnActor<ASymbolCube>(SymbolCubeBlueprint, SpawnLocation, SpawnRotation, spawnParameters);
+    if (NewSymbol)
+    {
+        UE_LOG(LogTemp, Log, TEXT("AlphabetInstanceSubsystem: Successfully spawned symbol: %c"), (TCHAR)symbol);
+        return NewSymbol;
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("AlphabetInstanceSubsystem: Failed to spawn symbol: %c"), (TCHAR)symbol);
+        return nullptr;
+    }
+
+    return nullptr;
+}
+
+void UAlphabetInstanceSubsystem::LoadCubeSymbol()
+{
+    FString Path = FString::Printf(TEXT("/Game/Blueprint/Symbol/BP_SymbolCube.BP_SymbolCube_C"));// ObjectPath
+
+    if (UClass* LoadedClass = Cast<UClass>(StaticLoadObject(UClass::StaticClass(), nullptr, *Path)))
+    {
+        if (LoadedClass->IsChildOf(ASymbolCube::StaticClass()))
+        {
+            SymbolCubeBlueprint = LoadedClass;
+        }
+    }
 }
 
 PRAGMA_ENABLE_OPTIMIZATION
@@ -206,12 +260,42 @@ AAlphabetSymbol* UAlphabetInstanceSubsystem::SpawmSymbol(const int32 symbol, con
     }
 }
 
+ASymbolCube* UAlphabetInstanceSubsystem::SpawmSymbolByCubes(const int32 symbol, const FVector location, FRotator rotation)
+{
+    // Write a system to spawn symbol by cubes
+
+    /*
+    * Input data: symbol char, location (start location to spawn a new symbol), rotation
+    * Output data: spawned symbol, offset to move next symbol
+    * 
+    * Symbol representation by 1 and 0 in 4x4 grid
+    * 0110
+    * 1001
+    * 1111
+    * 1001
+    * 
+    * Case I 
+    * 1110
+    * 0100
+    * 0100
+    * 1110
+    * 
+    */
+
+    SpawnCube(location, rotation);
+}
+
+
+
 void UAlphabetInstanceSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
-    const FString albet{ "ABCDEFGHIJKLMOPRSTUVWXYZ" };
+    Super::OnWorldBeginPlay(InWorld);
+    //const FString albet{ "ABCDEFGHIJKLMOPRSTUVWXYZ" };
 
 
-    LoadAlphabet(albet);
+    //LoadAlphabet(albet);
+    LoadCubeSymbol();
+    // Load Single Cube Blueprint
 }
 
 
