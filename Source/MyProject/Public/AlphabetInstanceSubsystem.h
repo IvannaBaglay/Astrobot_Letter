@@ -33,7 +33,7 @@ public:
      void AddAlphabet(int32 symbol); // TODO: how to create fabric?>?
      UFUNCTION()
      AAlphabetSymbol* SpawmSymbol(const int32 symbol,const FVector location, FRotator rotation); // call it in trigger area to spawn symbol
-     ASymbolCube* SpawmSymbolByCubes(const int32 symbol,const FVector location, FRotator rotation); // call it in trigger area to spawn symbol
+     bool SpawmSymbolByCubes(const int32 symbol,const FVector location, FRotator rotation, FVector forward); // call it in trigger area to spawn symbol
      UFUNCTION()
      void SpawnSentence(FString sentence, const FVector startLocation, FRotator rotation, FVector forward);
 
@@ -49,7 +49,7 @@ private:
 
 private:
     // New system to spawn cube
-    void SpawnCube(const FVector location, FRotator rotation);
+    TObjectPtr<ASymbolCube> SpawnCube(const FVector location, FRotator rotation);
     void LoadCubeSymbol();
 
 public: 

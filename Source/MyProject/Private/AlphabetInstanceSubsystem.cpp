@@ -36,10 +36,10 @@ void UAlphabetInstanceSubsystem::SpawnSentence(FString sentence, const FVector s
 
     for (int32 symbol : sentence)
     {
-        TObjectPtr<ASymbolCube> spawnedCube = SpawmSymbolByCubes(symbol, startLocation + offset, rotation);
-        if (spawnedCube)
+        bool spawnedCubeSuccessfully = SpawmSymbolByCubes(symbol, startLocation + offset, rotation, forward);
+        if (spawnedCubeSuccessfully)
         {
-            MoveOffset(spawnedCube->GetSize(), offset, forward);
+            MoveOffset(FVector(100.f,100.f,100.f), offset, forward);
         }
         //AAlphabetSymbol* spawnedSymbol = SpawmSymbol(symbol, startLocation + offset, rotation);
         //if (spawnedSymbol)
@@ -133,7 +133,7 @@ FVector UAlphabetInstanceSubsystem::GetStaticMeshSize(const AAlphabetSymbol* Act
     return Actor->GetMeshSize();
 }
 
-void UAlphabetInstanceSubsystem::SpawnCube(const FVector location, FRotator rotation)
+TObjectPtr<ASymbolCube> UAlphabetInstanceSubsystem::SpawnCube(const FVector location, FRotator rotation)
 {
     TObjectPtr<UWorld> world = GetWorld();
     if (!world)
@@ -152,16 +152,15 @@ void UAlphabetInstanceSubsystem::SpawnCube(const FVector location, FRotator rota
     TObjectPtr<ASymbolCube> NewSymbol = world->SpawnActor<ASymbolCube>(SymbolCubeBlueprint, SpawnLocation, SpawnRotation, spawnParameters);
     if (NewSymbol)
     {
-        UE_LOG(LogTemp, Log, TEXT("AlphabetInstanceSubsystem: Successfully spawned symbol: %c"), (TCHAR)symbol);
-        return NewSymbol;
+        UE_LOG(LogTemp, Log, TEXT("AlphabetInstanceSubsystem: Successfully spawn"));
     }
     else
     {
-        UE_LOG(LogTemp, Error, TEXT("AlphabetInstanceSubsystem: Failed to spawn symbol: %c"), (TCHAR)symbol);
-        return nullptr;
+        UE_LOG(LogTemp, Error, TEXT("AlphabetInstanceSubsystem: Failed to spawn"));
+
     }
 
-    return nullptr;
+    return NewSymbol;
 }
 
 void UAlphabetInstanceSubsystem::LoadCubeSymbol()
@@ -177,7 +176,6 @@ void UAlphabetInstanceSubsystem::LoadCubeSymbol()
     }
 }
 
-PRAGMA_ENABLE_OPTIMIZATION
 
 
 FVector UAlphabetInstanceSubsystem::GetSymbolSize(const int32 symbol)
@@ -260,10 +258,59 @@ AAlphabetSymbol* UAlphabetInstanceSubsystem::SpawmSymbol(const int32 symbol, con
     }
 }
 
-ASymbolCube* UAlphabetInstanceSubsystem::SpawmSymbolByCubes(const int32 symbol, const FVector location, FRotator rotation)
+bool UAlphabetInstanceSubsystem::SpawmSymbolByCubes(const int32 symbol, const FVector location, FRotator rotation, FVector forward)
 {
-    // Write a system to spawn symbol by cubes
+    forward.Normalize();
 
+    // Write a system to spawn symbol by cubes
+    const FVector startSpawnLocation = location;
+    FVector spawnPoint = startSpawnLocation;
+    FVector spawnOffset = FVector::ZeroVector;
+
+    TArray<bool> symbolCodeA = {false, true,true, false,
+                               true, false, false, true,
+                               true, true, true, true, 
+                               true, false, false, true,
+                               true, false, false, true };
+
+    TArray<bool> symbolCodeB = { true, true,true, false,
+                                 true, false, false, true,
+                                 true, true, true, false,
+                                 true, false, false, true,
+                                 true, true, true, false };
+
+    check(symbolCodeB.Num() == 20);
+
+    const float verticalOffset = 10; // TODO : make it dynamic
+    const float horizontalOffset = 10;
+
+    float currentVerticalOffset = 0;
+    float currentHorizontalOffset = 0;
+
+    for (int i = 0; i < symbolCodeB.Num(); i++)
+    {
+        if (!symbolCodeB[i])
+        {
+            continue;
+        }
+
+        TObjectPtr<ASymbolCube> spawnedCube = SpawnCube(spawnPoint, rotation);
+        check(spawnedCube);
+
+        UE_LOG(LogTemp, Log, TEXT("AlphabetInstanceSubsystem: Successfully spawned cube: %i"), i);
+
+        FVector cubeSize = spawnedCube->GetSize() * 0.1;
+
+        currentHorizontalOffset = (i % 4) * horizontalOffset;
+        currentVerticalOffset = (i / 4) * verticalOffset;
+
+        spawnOffset = FVector(currentHorizontalOffset , 0.f, -currentVerticalOffset);
+        spawnPoint = (startSpawnLocation + spawnOffset);
+    }
+
+
+    
+    
     /*
     * Input data: symbol char, location (start location to spawn a new symbol), rotation
     * Output data: spawned symbol, offset to move next symbol
@@ -282,9 +329,18 @@ ASymbolCube* UAlphabetInstanceSubsystem::SpawmSymbolByCubes(const int32 symbol, 
     * 
     */
 
-    SpawnCube(location, rotation);
+
+    // array of 16 bool elements to represent symbol in 4x4 grid
+    // for example, symbol A
+    // how to move spawn point
+    // 
+
+
+
+    return true;
 }
 
+PRAGMA_ENABLE_OPTIMIZATION
 
 
 void UAlphabetInstanceSubsystem::OnWorldBeginPlay(UWorld& InWorld)
