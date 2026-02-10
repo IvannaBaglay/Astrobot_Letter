@@ -14,6 +14,7 @@
 #include "Kismet/KismetMathLibrary.h"
 
 #include "AlphabetInstanceSubsystem.h"
+#include "DrawDebugHelpers.h"
 
 #define print(text) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1.5, FColor::Green,text)
 #define printFString(text, fstring) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT(text), fstring))
@@ -21,10 +22,8 @@
 // Sets default values
 ATriggerPlatform::ATriggerPlatform()
 {
-    
-
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+    // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+    PrimaryActorTick.bCanEverTick = true;
 
     // In Constructor
     DefaultRoot = CreateDefaultSubobject<USceneComponent>(TEXT("DefaultRoot"));
@@ -42,44 +41,23 @@ ATriggerPlatform::ATriggerPlatform()
 	OnActorBeginOverlap.AddDynamic(this, &ATriggerPlatform::OnOverlapActorBegin);
 	OnActorEndOverlap.AddDynamic(this, &ATriggerPlatform::OnOverlapEnd);
 
-    //DrawDebugBox(GetWorld(), GetActorLocation(), SpawnZoneComponent->Getcoli.GetSize(), FColor::Purple, true, 999, 0, 5);
-
-    // Set up the spawn zone
-    //SpawnZone = CreateDefaultSubobject<UArrowComponent>(TEXT("SpawnZone"));
-    //SpawnZone->SetupAttachment(RootComponent);
-    //// Set a default offset above the trigger (e.g., 100 units up)
-    //SpawnZone->SetWorldLocation(this->GetActorLocation());
-    //SpawnZone->SetRelativeLocation(FVector(0.0f, 0.0f, 100.0f));
-
-    //SpawnZoneComponent->Attac(RootComponent);
-    // Set a default offset above the trigger (e.g., 100 units up)
-    //SpawnZone->SetRelativeLocation();
-    //GetComponentsByTag
-    //if (GetComponentName().Contains(TEXT("Shield"))
-    //{
-    //    HoldingComponent->SetStaticMesh(ShieldMesh);
-    //}
-    //else if (GetComponentName.Contains(TEXT("Deflect"))
-    //{
-    //    HoldingComponent->SetStaticMesh(DeflectMesh);
-    //}
-
 }
 
 // Called when the game starts or when spawned
 void ATriggerPlatform::BeginPlay()
 {
-	Super::BeginPlay();
+    Super::BeginPlay();
 
-    //DrawDebugBox(GetWorld(), TriggerBoxNewComponent->GetComponentLocation(), TriggerBoxNewComponent->GetScaledBoxExtent(), FColor::Purple, true, 999, 0, 5);
-    //DrawDebugSphere(GetWorld(), SpawnPointNewComponent->GetComponentLocation(), SpawnPointNewComponent->GetScaledSphereRadius(), 8,  FColor::Red, true, 999, 0, 5);
+
+    FVector debugTransformLocation = SpawnPointNewComponent->GetComponentTransform().GetLocation();
+    FVector debugTransformForward = SpawnPointNewComponent->GetForwardVector();
+    DrawDebugLine(GetWorld(), debugTransformLocation, debugTransformLocation + debugTransformForward * 100.f, FColor::Orange, true, -1.f, 0, 3.f);
 }
 
 // Called every frame
 void ATriggerPlatform::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
-
+    Super::Tick(DeltaTime);
 }
 
 void ATriggerPlatform::OnOverlapComponentBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -117,27 +95,14 @@ void ATriggerPlatform::OnOverlapComponentBegin(UPrimitiveComponent* OverlappedCo
 
 void ATriggerPlatform::OnOverlapActorBegin(class AActor* OverlappedActor, class AActor* OtherActor)
 {
-    //// check if Actors do not equal nullptr and that 
-    //if (OtherActor && OtherActor != this)
-    //{
-    //    if (GEngine)
-    //    {
-    //        GEngine->AddOnScreenDebugMessage(-1, 1.5, FColor::Green, TEXT("Overlap Begin"));
-    //        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Magenta, FString::Printf(TEXT("Overlapped Actor = %s"), *OverlappedActor->GetName()));
-    //    }
-    //}
-    //
-    //
-    //FTransform SpawnTransform = SpawnZone->GetComponentTransform();
-    //
-    //UAlphabetInstanceSubsystem* Subsystem = GetWorld()->GetSubsystem<UAlphabetInstanceSubsystem>();
-    //if (Subsystem)
-    //{
-    //    UE_LOG(LogTemp, Log, TEXT("TriggerZone: Spawned symbol %s"), *Str);
-    //    UE_LOG(LogTemp, Log, TEXT("TriggerZone: Spawned symbol at %s"), *SpawnTransform.GetLocation().ToString());
-    //    FVector position = SpawnTransform.GetLocation();
-    //    Subsystem->SpawnSentence(Str, position);
-    //}
+    if (OtherActor && OtherActor != this)
+    {
+        if (GEngine)
+        {
+            GEngine->AddOnScreenDebugMessage(-1, 1.5, FColor::Green, TEXT("Overlap Actor Begin"));
+            GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Magenta, FString::Printf(TEXT("%s has entered the Trigger Box"), *OtherActor->GetName()));
+        }
+    }
 }
 
 void ATriggerPlatform::OnOverlapEnd(class AActor* OverlappedActor, class AActor* OtherActor)
