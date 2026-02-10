@@ -262,6 +262,8 @@ bool UAlphabetInstanceSubsystem::SpawmSymbolByCubes(const int32 symbol, const FV
 {
     forward.Normalize();
 
+    UE_LOG(LogTemp, Log, TEXT("Forward: [%f, %f, %f]"), forward.X, forward.Y, forward.Z);
+
     // Write a system to spawn symbol by cubes
     const FVector startSpawnLocation = location;
     FVector spawnPoint = startSpawnLocation;
@@ -287,25 +289,27 @@ bool UAlphabetInstanceSubsystem::SpawmSymbolByCubes(const int32 symbol, const FV
     float currentVerticalOffset = 0;
     float currentHorizontalOffset = 0;
 
+
     for (int i = 0; i < symbolCodeB.Num(); i++)
     {
         if (!symbolCodeB[i])
         {
             continue;
         }
+        // TODO: make offset dynamically depends on spawned cube size 
+        currentHorizontalOffset = (i % 4) * horizontalOffset;
+        currentVerticalOffset = (i / 4) * verticalOffset;
+
+        spawnOffset = FVector(currentHorizontalOffset, 0.f, -currentVerticalOffset);
+        spawnPoint = (startSpawnLocation + spawnOffset);
 
         TObjectPtr<ASymbolCube> spawnedCube = SpawnCube(spawnPoint, rotation);
         check(spawnedCube);
 
-        UE_LOG(LogTemp, Log, TEXT("AlphabetInstanceSubsystem: Successfully spawned cube: %i"), i);
+        UE_LOG(LogTemp, Log, TEXT("AlphabetInstanceSubsystem: Successfully spawned cube: %i/n"), i);
+        UE_LOG(LogTemp, Log, TEXT("Position: [%f, %f, %f]"), spawnPoint.X, spawnPoint.Y, spawnPoint.Z);
 
-        FVector cubeSize = spawnedCube->GetSize() * 0.1;
-
-        currentHorizontalOffset = (i % 4) * horizontalOffset;
-        currentVerticalOffset = (i / 4) * verticalOffset;
-
-        spawnOffset = FVector(currentHorizontalOffset , 0.f, -currentVerticalOffset);
-        spawnPoint = (startSpawnLocation + spawnOffset);
+        //FVector cubeSize = spawnedCube->GetSize() * 0.1; // Added previous cube spawned?
     }
 
 

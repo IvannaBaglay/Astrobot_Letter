@@ -23,23 +23,31 @@
 ATriggerPlatform::ATriggerPlatform()
 {
     // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-    PrimaryActorTick.bCanEverTick = true;
+    PrimaryActorTick.bCanEverTick = false;
+
+    Root = CreateDefaultSubobject<USceneComponent>("Root");
+    SetRootComponent(Root);
 
     // In Constructor
-    DefaultRoot = CreateDefaultSubobject<USceneComponent>(TEXT("DefaultRoot"));
-    SetRootComponent(DefaultRoot);
+    Mesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
+    Mesh->SetupAttachment(GetRootComponent());
 
-    SpawnPointNewComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SpawnPoint"));
-    SpawnPointNewComponent->SetupAttachment(DefaultRoot);
-    TriggerBoxNewComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
-    TriggerBoxNewComponent->SetupAttachment(DefaultRoot);
+    TriggerBoxComponent = CreateDefaultSubobject<UBoxComponent>("TriggerBox");
+    TriggerBoxComponent->SetupAttachment(GetRootComponent());
 
-    TriggerBoxNewComponent->SetCollisionProfileName(TEXT("Trigger"));
-    TriggerBoxNewComponent->OnComponentBeginOverlap.AddDynamic(this, &ATriggerPlatform::OnOverlapComponentBegin);
+    TriggerBoxComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly); 
+    TriggerBoxComponent->SetCollisionObjectType(ECC_WorldDynamic);
+    TriggerBoxComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
+    TriggerBoxComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+
+    SpawnPointComponent = CreateDefaultSubobject<USphereComponent>("SpawnPoint");
+    SpawnPointComponent->SetupAttachment(GetRootComponent());
+
+    ArrowComponent = CreateDefaultSubobject<UArrowComponent>("ArrowForward");
+    ArrowComponent->SetupAttachment(SpawnPointComponent);
     
-    //Register Events
-	OnActorBeginOverlap.AddDynamic(this, &ATriggerPlatform::OnOverlapActorBegin);
-	OnActorEndOverlap.AddDynamic(this, &ATriggerPlatform::OnOverlapEnd);
+    TriggerBoxComponent->SetCollisionProfileName(TEXT("Trigger"));
+    TriggerBoxComponent->OnComponentBeginOverlap.AddDynamic(this, &ATriggerPlatform::OnOverlapComponentBegin);
 
 }
 
@@ -49,15 +57,20 @@ void ATriggerPlatform::BeginPlay()
     Super::BeginPlay();
 
 
-    FVector debugTransformLocation = SpawnPointNewComponent->GetComponentTransform().GetLocation();
-    FVector debugTransformForward = SpawnPointNewComponent->GetForwardVector();
+    FVector debugTransformLocation = SpawnPointComponent->GetComponentTransform().GetLocation();
+    FVector debugTransformForward = SpawnPointComponent->GetForwardVector();
     DrawDebugLine(GetWorld(), debugTransformLocation, debugTransformLocation + debugTransformForward * 100.f, FColor::Orange, true, -1.f, 0, 3.f);
+
+
+    //Register Events
+    OnActorBeginOverlap.AddDynamic(this, &ATriggerPlatform::OnOverlapActorBegin);
+    OnActorEndOverlap.AddDynamic(this, &ATriggerPlatform::OnOverlapEnd);
 }
 
 // Called every frame
 void ATriggerPlatform::Tick(float DeltaTime)
 {
-    Super::Tick(DeltaTime);
+    // Super::Tick(DeltaTime);
 }
 
 void ATriggerPlatform::OnOverlapComponentBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -72,13 +85,13 @@ void ATriggerPlatform::OnOverlapComponentBegin(UPrimitiveComponent* OverlappedCo
         }
     }
 
-    if (SpawnPointNewComponent == nullptr)
+    if (SpawnPointComponent == nullptr)
     {
         UE_LOG(LogTemp, Error, TEXT("SpawnZone is nullptr"));
         return;
     }
 
-    FTransform SpawnTransform = SpawnPointNewComponent->GetComponentTransform();
+    FTransform SpawnTransform = SpawnPointComponent->GetComponentTransform();
 
     UAlphabetInstanceSubsystem* Subsystem = GetWorld()->GetSubsystem<UAlphabetInstanceSubsystem>();
     if (Subsystem)
@@ -87,7 +100,7 @@ void ATriggerPlatform::OnOverlapComponentBegin(UPrimitiveComponent* OverlappedCo
         UE_LOG(LogTemp, Log, TEXT("TriggerZone: Spawned symbol at %s"), *SpawnTransform.GetLocation().ToString());
         FVector position = SpawnTransform.GetLocation();
         FRotator rotation = SpawnTransform.Rotator();
-        FVector forward = SpawnPointNewComponent->GetForwardVector();
+        FVector forward = SpawnPointComponent->GetForwardVector();
         FVector forwardFromRotation = UKismetMathLibrary::GetForwardVector(rotation);
         Subsystem->SpawnSentence(Str, position, rotation, forward);
     }   

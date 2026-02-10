@@ -6,6 +6,10 @@
 #include "GameFramework/Actor.h"
 #include "TriggerPlatform.generated.h"
 
+class UStaticMeshComponent;
+class UBoxComponent;
+class USphereComponent;
+class UArrowComponent;
 
 UCLASS()
 class MYPROJECT_API ATriggerPlatform : public AActor
@@ -16,19 +20,25 @@ public:
 	// Sets default values for this actor's properties
 	ATriggerPlatform();
 
-	UPROPERTY(EditAnywhere)
-	USceneComponent* DefaultRoot = nullptr;
-
-	// Root component for the trigger
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	class UBoxComponent* TriggerBoxNewComponent = nullptr;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	class USphereComponent* SpawnPointNewComponent = nullptr;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<USceneComponent> Root = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UStaticMeshComponent> Mesh = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UBoxComponent> TriggerBoxComponent = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<USphereComponent> SpawnPointComponent = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UArrowComponent> ArrowComponent = nullptr;
 
 public:	
 	// Called every frame
@@ -46,4 +56,5 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FString Str;
+
 };
